@@ -6,7 +6,7 @@
 	url = https://github.com/littlevgl/lv_drivers.git
 [submodule "lvgl"]
 	path = lvgl
-	url = https://github.com/littlevgl/lvgl.git
+	url = ssh://git@bitbucket.microchip.com/linux4sam/lvgl-mchp.git
 [submodule "lv_demos"]
 	path = lv_demos
 	url = https://github.com/lvgl/lv_demos

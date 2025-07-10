@@ -361,6 +361,9 @@
 #if LV_USE_PPA
     #define LV_USE_PPA_IMG 0
 #endif
+
+/** Use Microchip's M2D on MPU platforms */
+#define LV_USE_DRAW_M2D 1
 /*=======================
  * FEATURE CONFIGURATION
  *=======================*/
@@ -1209,7 +1212,7 @@
 #endif
 
 /** Driver for /dev/fb */
-#define LV_USE_LINUX_FBDEV      1
+#define LV_USE_LINUX_FBDEV      0
 #if LV_USE_LINUX_FBDEV
     #define LV_LINUX_FBDEV_BSD           0
     #define LV_LINUX_FBDEV_RENDER_MODE   LV_DISPLAY_RENDER_MODE_PARTIAL
@@ -1247,7 +1250,7 @@
 #endif
 
 /** Driver for /dev/dri/card */
-#define LV_USE_LINUX_DRM        0
+#define LV_USE_LINUX_DRM        1
 
 #if LV_USE_LINUX_DRM
 

@@ -156,6 +156,18 @@ if (CONFIG_LV_USE_OPENGLES)
 
 endif()
 
+if (CONFIG_LV_USE_DRAW_M2D)
+
+    message("Including Microchip M2D support")
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(M2D REQUIRED libm2d>=2.1.0)
+
+    list(APPEND PKG_CONFIG_LIB ${M2D_LIBRARIES})
+    list(APPEND PKG_CONFIG_INC ${M2D_INCLUDE_DIRS})
+
+endif()
+
 file(GLOB LV_LINUX_SRC src/lib/*.c)
 set(LV_LINUX_INC src/lib)
 
