@@ -150,8 +150,12 @@ int main(int argc, char **argv)
 #endif
 
     /*Create a Demo*/
+#if 0
     lv_demo_widgets();
     lv_demo_widgets_start_slideshow();
+#else
+    lv_demo_benchmark();
+#endif
 
     /* Enter the run loop of the selected backend */
     driver_backends_run_loop();
