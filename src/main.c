@@ -30,8 +30,6 @@
 #include "src/lib/simulator_util.h"
 #include "src/lib/simulator_settings.h"
 
-#define USE_IMG_BUTTONS 1
-
 #if LV_COLOR_DEPTH == 32
 #define BPP_DEFINE "32bpp"
 #define BTN_DEFINE "wgt"
@@ -46,6 +44,12 @@
 #define BPP_DEFINE "unknown"
 #endif
 
+typedef enum
+{
+    SCROLL_TEST_IMAGES,
+    SCROLL_TEST_WIDGET,
+} SCROLL_TEST_TYPE;
+
 /* Internal functions */
 static void configure_simulator(int argc, char **argv);
 static void print_lvgl_version(void);
@@ -58,6 +62,8 @@ static char *selected_backend;
 
 /* Global simulator settings, defined in lv_linux_backend.c */
 extern simulator_settings_t settings;
+
+static SCROLL_TEST_TYPE app_type = SCROLL_TEST_IMAGES;
 
 
 /**
@@ -173,7 +179,7 @@ int main(int argc, char **argv)
 #elif 0
     lv_demo_benchmark();
 #elif 1
-    lv_scroll_test();
+    lv_scroll_test(app_type);
 #endif
 
     /* Enter the run loop of the selected backend */
@@ -233,11 +239,34 @@ const lv_image_dsc_t * menu_icons[] =
     &imgTeaMakerFill,
 #endif
 };
+
+static void event_handler(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target_obj(e);
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        LV_UNUSED(obj);
+        app_type = ((lv_obj_has_state(obj, LV_STATE_CHECKED) == true) ?
+                    SCROLL_TEST_IMAGES :
+                    SCROLL_TEST_WIDGET);
+
+        lv_obj_t * scr = lv_screen_active();
+        lv_obj_clean(scr);
+
+        lv_scroll_test(app_type);
+    }
+}
    
 
-void lv_scroll_test()
+void lv_scroll_test(SCROLL_TEST_TYPE type)
 {
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x121212), 0);
+
+    /* type switch */
+    lv_obj_t * sw = lv_switch_create(lv_screen_active());
+    lv_obj_add_state(sw, (app_type == SCROLL_TEST_IMAGES) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
+    lv_obj_align(sw, LV_ALIGN_TOP_RIGHT, -20, 50);
+    lv_obj_add_event_cb(sw, event_handler, LV_EVENT_ALL, NULL);
 
     /* Static Text */
     lv_obj_t * static_text = lv_label_create(lv_screen_active());
@@ -248,15 +277,23 @@ void lv_scroll_test()
 
     /* Static Text */
     lv_obj_t * config_text = lv_label_create(lv_screen_active());
-    lv_label_set_text(config_text, "Config: "BPP_DEFINE", " BTN_DEFINE);
-    lv_obj_align(config_text, LV_ALIGN_BOTTOM_LEFT, 0, 20);
-    lv_obj_set_style_text_font(config_text, &lv_font_montserrat_14, 0);
+    if (type == SCROLL_TEST_IMAGES) 
+    {
+        lv_label_set_text(config_text, "Config: "BPP_DEFINE", image");
+    }
+    else 
+    {
+        lv_label_set_text(config_text, "Config: "BPP_DEFINE", widget");
+    }
+
+    lv_obj_align(config_text, LV_ALIGN_TOP_RIGHT, 0, 0);
+    lv_obj_set_style_text_font(config_text, &lv_font_montserrat_12, 0);
     lv_obj_set_style_text_color(config_text, lv_color_make(0xff, 0xff, 0xff), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t * build_text = lv_label_create(lv_screen_active());
     lv_label_set_text(build_text, "Build: "__DATE__", " __TIME__);
     lv_obj_align(build_text, LV_ALIGN_BOTTOM_LEFT, 0, 0);
-    lv_obj_set_style_text_font(build_text, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_font(build_text, &lv_font_montserrat_12, 0);
     lv_obj_set_style_text_color(build_text, lv_color_make(0xff, 0xff, 0xff), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t * panel = lv_obj_create(lv_screen_active());
@@ -272,28 +309,33 @@ void lv_scroll_test()
     uint32_t i;
     for(i = 0; i < sizeof(menu_icons)/sizeof(lv_image_dsc_t *); i++) 
     {
-#if (USE_IMG_BUTTONS == 1)
-        lv_obj_t * btn = lv_imagebutton_create(panel);
-        lv_obj_set_size(btn, 279, 250);
+        lv_obj_t * btn;
+        if (type == SCROLL_TEST_IMAGES) 
+        {
+            btn = lv_imagebutton_create(panel);
+            // lv_obj_set_size(btn, 279, 250);
 
-    #if (LV_COLOR_DEPTH == 32)
-        lv_imagebutton_set_src(btn, LV_IMAGEBUTTON_STATE_RELEASED, NULL, &imgButton32bpp,
-                           NULL);
+        #if (LV_COLOR_DEPTH == 32)
+            lv_imagebutton_set_src(btn, LV_IMAGEBUTTON_STATE_RELEASED, NULL, &imgButton32bpp,
+                            NULL);
 
-    #else
-        lv_imagebutton_set_src(btn, LV_IMAGEBUTTON_STATE_RELEASED, NULL, &imgButton16bpp,
-                           NULL);
+        #else
+            lv_imagebutton_set_src(btn, LV_IMAGEBUTTON_STATE_RELEASED, NULL, &imgButton16bpp,
+                            NULL);
 
-    #endif
-#else
-        lv_obj_t * btn = lv_button_create(panel);
-        lv_obj_set_size(btn, 279, 250);
-        lv_obj_set_style_bg_color(btn, lv_color_hex(0x2A2A2A), 0); // Black background (opacity will be handled next)        
-        lv_obj_set_style_shadow_width(btn, 0, 0);
-#endif        
+        #endif
+        } 
+        else 
+        {
+            btn = lv_button_create(panel);
+            lv_obj_set_size(btn, 279, 250);
+            lv_obj_set_style_bg_color(btn, lv_color_hex(0x2A2A2A), 0); // Black background (opacity will be handled next)        
+            lv_obj_set_style_shadow_width(btn, 0, 0);
+        }
 
         lv_obj_t * icon = lv_image_create(btn);
         lv_image_set_src(icon, menu_icons[i]);
+        // lv_obj_set_size(icon, 42, 42);
         lv_obj_align(icon, LV_ALIGN_TOP_LEFT, 30, 50);        
 
         lv_obj_t * label = lv_label_create(btn);
