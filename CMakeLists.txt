@@ -185,7 +185,9 @@ target_include_directories(lvgl_linux PUBLIC
 # Link LVGL with external dependencies - Modern CMake/CMP0079 allows this
 target_link_libraries(lvgl PUBLIC ${PKG_CONFIG_LIB} m pthread)
 
-add_executable(lvglsim src/main.c ${LV_LINUX_SRC} ${LV_LINUX_BACKEND_SRC})
+file(GLOB_RECURSE APP_ASSET_SRC src/assets/*.c)
+
+add_executable(lvglsim src/main.c ${LV_LINUX_SRC} ${LV_LINUX_BACKEND_SRC} ${APP_ASSET_SRC})
 target_link_libraries(lvglsim lvgl_linux lvgl)
 
 if (CONFIG_LV_USE_DRAW_G2D)
